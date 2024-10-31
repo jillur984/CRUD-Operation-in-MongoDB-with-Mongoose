@@ -5,6 +5,21 @@ const app = express();
 
 const PORT = 3002;
 
+// create Products Schema by Mongoose
+const productsSchema=new mongoose.Schema({
+  title:String,
+  price:Number,
+  description:String,
+  createdAt:{
+    type:Date,
+    default:Date.now()
+  }
+})
+
+const product=mongoose.model("products",productsSchema)
+
+
+
 // connet mongoDB by Async Function
 
 const connectDB = async () => {
