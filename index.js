@@ -78,9 +78,22 @@ app.post("/products", async (req, res) => {
 
 app.get("/products", async (req, res) => {
   try {
-    const products = await Product.find();
-    // if i want only 2 data
-    // const products=await Product.find().limit(2)
+    // const products = await Product.find({price:{$gt:1500}}); // for find getter then
+    // const products = await Product.find({price:{$lt:1500}}); // for find less then
+    // const products = await Product.find({price:{$eq:1450}});  // for find equal price
+    // const products = await Product.find({price:{$ne:1450}}); // find not equal
+    // const products = await Product.find({price:{$in:[1500,1450,1350]}}); // check kore ei 3 price ba aro besi ami dite pari ase kina DB te.
+
+    // upper all i give static value .. we can pass also value dynamically
+    let price=req.query.price
+   
+    let products;
+    if(price){
+      products = await Product.find({price:{$gt:price}}); 
+    }
+    else{
+      products = await Product.find(); 
+    }
     if (products) {
       res.status(200).send({
         success: true,
@@ -101,15 +114,10 @@ app.get("/products", async (req, res) => {
 });
 
 // search a product by ID
-
 app.get("/products/:id", async (req, res) => {
   const id = req.params.id;
 
-  // find return a array but find one return a object
-  //  const products=await Product.find({_id:id}) // return a array
-  //  const products=await Product.findOne({_id:id}) // return a object
-
-  // if i want to show specific item
+ // if i want to show specific item
   const product = await Product.find({ _id: id }).select({
     title: 1,
     _id: 0,
