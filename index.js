@@ -15,6 +15,10 @@ const productsSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  rating: {
+    type: Number,
+    required: true,
+  },
   description: {
     type: String,
     required: true,
@@ -56,12 +60,14 @@ app.post("/products", async (req, res) => {
   try {
     const title = req.body.title;
     const price = req.body.price;
+    const rating = req.body.rating;
     const description = req.body.description;
 
     const newData = new Product({
       title: title,
       price: price,
       description: description,
+      rating: rating,
     });
 
     const productData = await newData.save();
@@ -76,23 +82,22 @@ app.post("/products", async (req, res) => {
 
 // get new products
 
+// get products by logical operator
+
 app.get("/products", async (req, res) => {
   try {
-    // const products = await Product.find({price:{$gt:1500}}); // for find getter then
-    // const products = await Product.find({price:{$lt:1500}}); // for find less then
-    // const products = await Product.find({price:{$eq:1450}});  // for find equal price
-    // const products = await Product.find({price:{$ne:1450}}); // find not equal
-    // const products = await Product.find({price:{$in:[1500,1450,1350]}}); // check kore ei 3 price ba aro besi ami dite pari ase kina DB te.
+    let price = req.query.price;
+    let rating = req.query.rating;
 
-    // upper all i give static value .. we can pass also value dynamically
-    let price=req.query.price
-   
     let products;
-    if(price){
-      products = await Product.find({price:{$gt:price}}); 
-    }
-    else{
-      products = await Product.find(); 
+    if (price && rating) {
+      products = await Product.find({
+        $or: [{ price: { $gt: price } }, { rating: { $gt: 4 } }],
+      });
+
+      // here give or operation ,, i use here and,nor ..
+    } else {
+      products = await Product.find();
     }
     if (products) {
       res.status(200).send({
@@ -117,7 +122,7 @@ app.get("/products", async (req, res) => {
 app.get("/products/:id", async (req, res) => {
   const id = req.params.id;
 
- // if i want to show specific item
+  // if i want to show specific item
   const product = await Product.find({ _id: id }).select({
     title: 1,
     _id: 0,
@@ -133,7 +138,7 @@ app.get("/products/:id", async (req, res) => {
     } catch (error) {
       res.status(404).send({
         success: false,
-        message: "Product not found",
+        message: "Product not found by This ID",
       });
     }
   }
@@ -142,6 +147,31 @@ app.get("/products/:id", async (req, res) => {
 app.listen(PORT, async (req, res) => {
   console.log(`Server is Runnig at http://localhost:${PORT}`);
   await connectDB();
+});
+
+// Delete a Single Product
+
+app.delete("/products/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.deleteOne({ _id: id });
+    if (product) {
+      res.status(200).send({
+        success: true,
+        message: "Deleted a single Product",
+        data: product,
+      });
+    } else {
+      res.status(404).send({
+        success: false,
+        message: "Product not found by This ID",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: error.message,
+    });
+  }
 });
 
 // database---collection---documents
