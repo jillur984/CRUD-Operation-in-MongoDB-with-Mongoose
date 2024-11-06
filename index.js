@@ -154,7 +154,8 @@ app.listen(PORT, async (req, res) => {
 app.delete("/products/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    const product = await Product.deleteOne({ _id: id });
+    // const product = await Product.deleteOne({ _id: id }); // etay response a kom details dekhay
+    const product=await Product.findByIdAndDelete({_id:id}) // eta dile response a onk details dekhay
     if (product) {
       res.status(200).send({
         success: true,
